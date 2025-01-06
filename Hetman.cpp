@@ -1,6 +1,8 @@
 #include <iostream>
 using namespace std;
 
+long long zajebistyLicznik = 0;
+
 struct Hetman
 {
     int x;
@@ -31,8 +33,27 @@ bool Bije(Hetman hetman1, Hetman hetman2)
     }
 }
 
-void wypelnil(int rozmiar, Hetman listaHetmanow[], int poziom, int DontUseThatX)
+bool **zrobTablice(int rozmiar)
 {
+    bool **teZle;
+    teZle = new bool *[rozmiar];
+    for (int i = 0; i < rozmiar; i++)
+    {
+        teZle[i] = new bool[rozmiar];
+    }
+    for (int i = 0; i < rozmiar; i++)
+    {
+        for (int j = 0; j < rozmiar; j++)
+        {
+            teZle[i][j] = false;
+        }
+    }
+    return teZle;
+}
+
+bool wypelnil(int rozmiar, Hetman *listaHetmanow, int poziom, bool **teZle)
+{
+    zajebistyLicznik++;
     bool czyDodano = false;
     for (int i = 0; i < rozmiar; i++)
     {
@@ -44,38 +65,55 @@ void wypelnil(int rozmiar, Hetman listaHetmanow[], int poziom, int DontUseThatX)
         {
             if (Bije(h, listaHetmanow[j]))
             {
-                byloBicie=true;
+                byloBicie = true;
                 break;
             }
         }
-        if ((byloBicie==false) && (DontUseThatX != i))
+        if ((byloBicie == false) && (!teZle[i][poziom]))
         {
-            czyDodano=true;
+            czyDodano = true;
             listaHetmanow[poziom] = h;
-            cout << h.x << ", " << h.y << endl;
             break;
         }
-        
     }
+
     if (czyDodano)
     {
-        if (poziom+1 == rozmiar)
+        if (poziom + 1 == rozmiar)
         {
-            exit;
+            return false;
         }
-        wypelnil(rozmiar, listaHetmanow, poziom+1, -1);
+        wypelnil(rozmiar, listaHetmanow, poziom + 1, teZle);
     }
     else
     {
-        wypelnil(rozmiar, listaHetmanow, poziom-1, listaHetmanow[poziom-1].x);
-    }    
+        for (int i = 0; i < rozmiar; i++)
+        {
+            teZle[i][poziom] = false;
+        }
+        teZle[listaHetmanow[poziom - 1].x][poziom - 1] = true;
+        wypelnil(rozmiar, listaHetmanow, poziom - 1, teZle);
+    }
+    return false;
+}
+
+void wydrukujHetmanuf(int rozmiar, Hetman listaHetmanow[])
+{
+    for (int i = 0; i < rozmiar; i++)
+    {
+        cout << listaHetmanow[i].x << ", " << listaHetmanow[i].y << endl;
+    }
+    
 }
 
 int main()
 {
     int rozmiar;
     cin >> rozmiar;
-    Hetman listaHetmanow[rozmiar];
-    wypelnil(rozmiar, listaHetmanow, 0, -1);
-    //Bije(hetman1, hetman2);
+    bool **teZle = zrobTablice(rozmiar);
+    Hetman *listaHetmanow=new Hetman[rozmiar];
+    wypelnil(rozmiar, listaHetmanow, 0, teZle);
+    // Bije(hetman1, hetman2);
+    wydrukujHetmanuf(rozmiar, listaHetmanow);
+    cout << "zajebisty licznik policzył do: " << zajebistyLicznik << endl;
 }
